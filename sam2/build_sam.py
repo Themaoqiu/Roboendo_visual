@@ -7,7 +7,9 @@
 import logging
 
 import torch
-from hydra import compose
+from hydra import compose, initialize_config_dir
+from hydra.core.global_hydra import GlobalHydra
+import os
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 
@@ -109,7 +111,13 @@ def build_sam2_camera_predictor(
     hydra_overrides.extend(hydra_overrides_extra)
 
     # Read config and init model
-    cfg = compose(config_name=config_file, overrides=hydra_overrides)
+    GlobalHydra.instance().clear()
+    
+    # Get the absolute path to the configs directory
+    config_dir = os.path.join(os.path.dirname(__file__), "..", "configs")
+    config_dir = os.path.abspath(config_dir)
+    with initialize_config_dir(config_dir=config_dir, version_base=None):
+        cfg = compose(config_name=config_file, overrides=hydra_overrides)
     OmegaConf.resolve(cfg)
     model = instantiate(cfg.model, _recursive_=True)
     _load_checkpoint(model, ckpt_path)

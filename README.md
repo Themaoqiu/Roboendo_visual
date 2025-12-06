@@ -39,8 +39,6 @@ pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorc
 # CUDA 12.0
 pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu120
 
-# CPU only (not recommended, will be very slow)
-pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cpu
 ```
 
 #### 3. Install Project Dependencies
@@ -51,7 +49,7 @@ pip install -e .
 
 #### 4. Install Additional Dependencies
 ```bash
-pip install ultralytics scipy scikit-image opencv-python
+pip install ultralytics  opencv-python
 ```
 
 #### 5. Download SAM2 Model Weights
@@ -67,6 +65,9 @@ wget https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large
 
 # Download small model (faster)
 wget https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_small.pt
+
+In this project, We have downloaded sam2.1 model from tiny to large, if you want more, please visit https://github.com/facebookresearch/sam2 for more models
+
 ```
 
 ## 📁 Model Setup
@@ -78,15 +79,14 @@ Place downloaded SAM2 models in the `checkpoints/` directory:
 
 ### 2. YOLOv8 Model
 You need to train or obtain a YOLOv8 model specifically for surgical instrument detection:
-- Rename your trained model file to `yolov8x-train.pt`
-- Place it in the project root: `E:\segment2\yolov8x-train.pt`
+- Rename your trained model file 
+- Place it in your project root:
 
 **If you don't have a trained YOLO model, you can download a pretrained model for testing:**
 ```bash
 # Download pretrained YOLOv8x model
 wget https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8x.pt
-# Rename it to
-mv yolov8x.pt yolov8x-train.pt
+
 ```
 
 ## ⚙️ Configuration
@@ -95,9 +95,11 @@ Modify the following configurations in `main_plus.py`:
 
 ```python
 # Model path configuration
-YOLO_CHECKPOINT = 'E:\\segment2\\yolov8x-train.pt'                    # YOLO model path
-SAM2_CHECKPOINT = 'E:\\segment2\\pro\\checkpoints\\sam2.1_hiera_large.pt'  # SAM2 model path
-SAM2_CFG = "E:\\segment2\\pro\\sam2\\sam2.1_hiera_l.yaml"             # SAM2 config file
+YOLO_CHECKPOINT  # YOLO model path
+SAM2_CHECKPOINT  # SAM2 model path
+SAM2_CFG         # SAM2 config file
+
+All of these can use your own trained models.
 
 # Detection parameters
 window_size = 30    # Anomaly detection window size
@@ -139,6 +141,8 @@ Keyboard controls during runtime:
 - **'q'**: Exit the program
 - **'r'**: Manually reset the tracker
 
+If you find that segmentation goes wrong, you can press 'r' to renovate the detection.
+
 ## 🔧 Technical Architecture
 
 ### System Workflow
@@ -177,21 +181,13 @@ Keyboard controls during runtime:
 - **FFT Analysis**: Frequency domain anomaly detection
 - **Sliding Window**: Real-time windowed processing
 
-## 📊 Performance Benchmarks
-
-| Model | Accuracy | Speed (FPS) | GPU Memory |
-|-------|----------|-------------|------------|
-| SAM2 Large + YOLOv8x | High | 15-25 | 8GB+ |
-| SAM2 Small + YOLOv8x | Medium | 25-35 | 6GB+ |
-| SAM2 Tiny + YOLOv8x | Low | 35-45 | 4GB+ |
-
 ## 🐛 Troubleshooting
 
 ### 1. CUDA Out of Memory
 ```bash
 # Try using small model
-SAM2_CHECKPOINT = 'E:\\segment2\\pro\\checkpoints\\sam2.1_hiera_small.pt'
-SAM2_CFG = "E:\\segment2\\pro\\sam2\\sam2.1_hiera_s.yaml"
+SAM2_CHECKPOINT = 'sam2.1_hiera_small.pt'
+SAM2_CFG = "sam2.1_hiera_s.yaml"
 ```
 
 ### 2. Camera Cannot Open
@@ -221,14 +217,6 @@ ls -la checkpoints/
 
 Issues and Pull Requests are welcome!
 
-### Development Environment Setup
-```bash
-# Install development dependencies
-pip install -e ".[dev]"
-
-# Code formatting
-usort sam2/
-black sam2/
 ```
 
 ## 📝 License

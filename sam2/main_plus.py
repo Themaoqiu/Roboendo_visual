@@ -45,7 +45,7 @@ class ObjectDetector:
         - score_thres: Confidence threshold for keeping boxes
         - iou_thres: IoU threshold for non-maximal suppression
         """
-        self.model = YOLO(YOLO_checkpoint)
+        self.model = YOLO(YOLO_checkpoint, verbose=False)
         self.score_thres = score_thres
         self.iou_thres = iou_thres
         self.frame_with_bboxes = None
@@ -151,12 +151,6 @@ class ObjectDetector:
         best_candidate = candidates[0]
         best_idx = best_candidate['index']
 
-        print(f"[Detection] Selected bbox - Aspect ratio: {best_candidate['aspect_ratio']:.2f}, "
-              f"From edge: {best_candidate['edge_types']}, "
-              f"Confidence: {best_candidate['confidence']:.2f}, "
-              f"Score weight: {best_candidate['score_weight']:.2f}, "
-              f"Area ratio: {best_candidate['area_ratio']:.2f}")
-
         return {
             "bboxes": pred_boxes[best_idx].astype(np.int32).tolist(),
             "det_scores": scores.tolist()[best_idx],
@@ -166,7 +160,7 @@ class ObjectDetector:
     def _process_detection(self, frame: np.ndarray) -> dict:
         """Detect objects in a single frame using YOLOv8 and return the surgical instrument bbox."""
         pil_image = Image.fromarray(frame)
-        result = self.model(pil_image)[0]
+        result = self.model(pil_image, verbose=False)[0]
         pred_boxes = result.boxes.xyxy.cpu().numpy()
         scores = result.boxes.conf.cpu().numpy()
         labels = result.boxes.cls.cpu().numpy().astype(int)
@@ -196,11 +190,6 @@ class ObjectDetector:
         """
         # Process the frame for object detection
         self.detection = self._process_detection(frame)
-
-        if self.detection:
-            print(f"Detection for the Surgical Instrument: {self.detection}")
-        else:
-            print("No surgical instrument detected!")
 
         return self.detection
 
@@ -595,7 +584,6 @@ class RealtimeTrackingPipeline:
                     detections = self.detector.process_frame(frame)
 
                     if detections is None:
-                        print("等待检测手术器械...")
                         cv2.imshow("Realtime Tracking", frame)
                         if cv2.waitKey(1) & 0xFF == ord('q'):
                             break
@@ -722,9 +710,9 @@ class RealtimeTrackingPipeline:
 # =============================================================
 def main():
     # 配置参数
-    YOLO_CHECKPOINT = 'E:\\segment\\yolov8.pt'
-    SAM2_CHECKPOINT = 'E:\\segment\\segment2\\checkpoints\\sam2.1_hiera_large.pt'
-    SAM2_CFG = "sam2.1_hiera_l.yaml"
+    YOLO_CHECKPOINT = 'E:\\segment2\\yolov8x-train.pt'
+    SAM2_CHECKPOINT = 'E:\segment2\pro\checkpoints\sam2.1_hiera_large.pt'
+    SAM2_CFG = "E:\\segment2\\pro\\sam2\\sam2.1_hiera_l.yaml"
 
     # 创建实时跟踪管道
     pipeline = RealtimeTrackingPipeline(
@@ -736,7 +724,7 @@ def main():
     )
 
     # 运行（使用摄像头1）
-    pipeline.run(camera_id=1)
+    pipeline.run(camera_id=0)
 
 if __name__ == "__main__":
     main()
